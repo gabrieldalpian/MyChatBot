@@ -77,10 +77,10 @@ async function askAI(question: string): Promise<string> {
       body: JSON.stringify({
         model: "google/gemini-pro-1.5",
         messages: [
-          { role: "system", content: "You are a helpful assistant. If the question is about Gabriel, answer as if you know him. If not, answer normally, and only give short answers" },
+          { role: "system", content: "You are a helpful assistant. Always answer in 1-2 short sentences. If the question is about Gabriel, answer as if you know him. If not, answer normally, but keep it brief." },
           { role: "user", content: question }
         ],
-        max_tokens: 200,
+        max_tokens: 60,
         stream: false
       }),
     });
