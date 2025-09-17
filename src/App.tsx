@@ -2,7 +2,6 @@ import { useState } from "react";
 import { responder } from "./bot";
 import "./App.css";
 
-
 function App() {
   const [messages, setMessages] = useState<{ author: "user" | "bot"; text: string }[]>([]);
   const [input, setInput] = useState("");
