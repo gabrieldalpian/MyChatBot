@@ -66,7 +66,7 @@ async function askAI(question: string): Promise<string> {
   const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
   if (!apiKey) return "AI API key not set.";
   try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", { // testing .env file 
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
