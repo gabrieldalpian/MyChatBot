@@ -63,31 +63,31 @@ function getPreMadeAnswer(question: string): string | null {
 }
 
 async function askAI(question: string): Promise<string> {
-  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) return "AI API key not set.";
+
   try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "Referer": window.location.origin,
-        "X-Title": document.title || "myChatbot"
-      },
-      body: JSON.stringify({
-        model: "google/gemini-1.5-pro",
-        messages: [
-          { role: "system", content: "You are a helpful assistant. Always answer briefly." },
-          { role: "user", content: question }
-        ]
-      }),
-    });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: question }] }],
+        }),
+      }
+    );
+
     if (!response.ok) {
       const errorText = await response.text();
       return `AI error (${response.status}): ${errorText}`;
     }
+
     const data = await response.json();
-    return data.choices?.[0]?.message?.content?.trim() || "Sorry, I couldn't get an answer from the AI.";
+    return (
+      data.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "Sorry, I couldn't get an answer from the AI."
+    );
   } catch (e) {
     return "Sorry, there was an error contacting the AI.";
   }
