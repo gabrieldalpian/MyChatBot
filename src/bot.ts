@@ -66,22 +66,20 @@ async function askAI(question: string): Promise<string> {
   const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
   if (!apiKey) return "AI API key not set.";
   try {
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", { // testing .env file 
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": window.location.origin,
+        "Referer": window.location.origin,
         "X-Title": document.title || "myChatbot"
       },
       body: JSON.stringify({
-        model: "google/gemini-pro-1.5",
+        model: "google/gemini-1.5-pro",
         messages: [
-          { role: "system", content: "You are a helpful assistant. Always answer in 1-2 short sentences. If the question is about Gabriel, answer as if you know him. If not, answer normally, but keep it brief." },
+          { role: "system", content: "You are a helpful assistant. Always answer briefly." },
           { role: "user", content: question }
-        ],
-        max_tokens: 60,
-        stream: false
+        ]
       }),
     });
     if (!response.ok) {
