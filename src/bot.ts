@@ -63,34 +63,50 @@ function getPreMadeAnswer(question: string): string | null {
 }
 
 async function askAI(question: string): Promise<string> {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
   if (!apiKey) return "AI API key not set.";
 
-  try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
-      {
+  const candidateModels = [
+    "google/gemini-pro-1.5",
+    "google/gemini-flash-1.5",
+    "openai/gpt-3.5-turbo",
+  ];
+
+  for (const model of candidateModels) {
+    try {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": window.location.origin,
+          "X-Title": document.title || "myChatbot",
+        },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: question }] }],
+          model,
+          messages: [
+            { role: "system", content: "You are a helpful assistant. Keep answers short and relevant." },
+            { role: "user", content: question },
+          ],
+          max_tokens: 80,
+          stream: false,
         }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        if (response.status === 404) continue;
+        return `AI error (${response.status}): ${errorText}`;
       }
-    );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      return `AI error (${response.status}): ${errorText}`;
+      const data = await response.json();
+      return data.choices?.[0]?.message?.content?.trim() || "Sorry, I couldn't get an answer from the AI.";
+    } catch (e) {
+      continue;
     }
-
-    const data = await response.json();
-    return (
-      data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "Sorry, I couldn't get an answer from the AI."
-    );
-  } catch (e) {
-    return "Sorry, there was an error contacting the AI.";
   }
+
+  return "AI error: no available models responded successfully.";
 }
 
 export async function responder(question: string): Promise<string> {
